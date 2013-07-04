@@ -197,14 +197,24 @@ monthly.max.map <- ggmap(get_map(location = c(min(long.range),
                            base_layer = ggplot(aes(x = LONG,
                                                    y = LAT),
                                                data = monthly.max)) + 
-  geom_point(aes(size = WIND.SPD),
+  geom_point(aes(colour = WIND.SPD),
              alpha = 0.5) +
   facet_wrap(~B) +
-  scale_size_area(name = "Wind Speed") +
+  scale_color_continuous(name = "Wind Speed",
+                         high = "red",
+                         low = "blue",
+                         limits = c(0,30)) +
   labs(x = "Longitude",
        y = "Latitude") + 
   coord_map()
 print(monthly.max.map)
+
+ggsave(file.path(data.dir,"figures","MonthlyMaximumWindSpeed.PNG"),
+       plot = monthly.max.map,
+       scale = 1, 
+       width = 9,
+       height = 6, units = c("in"),
+       dpi = 300, limitsize = TRUE)
 
 
 # Create daily data (we'll need this for monthly values, later) 
