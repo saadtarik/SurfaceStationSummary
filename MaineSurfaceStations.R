@@ -11,4 +11,4 @@ year.range <- c(as.Date("2010-01-01"),
                 as.Date("2012-12-31"))
 
 # Set working directory for this analysis----
-working.dir = '~/Documents/projects/Rcode/Test/Maine/ClimateMaps'
+working.dir = '~/Documents/projects/active/Rcode/Test/Maine/ClimateMaps'

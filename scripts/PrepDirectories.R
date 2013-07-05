@@ -9,7 +9,7 @@ dir.create(file.path(data.dir, "data", "csv"), showWarnings = FALSE)
 
 # make the directory for the figures
 dir.create(file.path(data.dir, "figures"), showWarnings = FALSE)
-dir.create(file.path(data.dir, "figures","StationImages"), showWarnings = FALSE)
+dir.create(file.path(data.dir, "maps"), showWarnings = FALSE)
 
 # make a directory for tex documents
 dir.create(file.path(data.dir, "tex"), showWarnings = FALSE)

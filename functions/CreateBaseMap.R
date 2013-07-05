@@ -9,16 +9,12 @@ CreateBaseMap <- function(lat.range = c(NA,NA),
                                       max(long.range),
                                       max(lat.range)),
                          source = "osm")
-  .e <- environment()
   # create the map object
   if (is.null(data.in)){
     base.map <- ggmap(base.map.in)
   } else {    
-    base.map <- ggmap(base.map.in,
-                      base_layer = ggplot(data = data.in,
-                                          aes(x = LONG,
-                                              y = LAT),
-                                          environment = .e))
+    base.map <- ggmap(base.map.in ) %+% data.in + aes(x = LONG,
+                                                      y = LAT)
   }
   base.map <- base.map +
     labs(x = "Longitude",

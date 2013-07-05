@@ -1,8 +1,9 @@
 showStation <- function(station,
-                        precision,
+                        precision = 0.0005,
                         image.half.width){
   print(station)
   station$LON <- station$LONG
+  station$precision <- precision
   # get the image
   image.in <- get_map(location = c(station$LON,
                                    station$LAT),
@@ -10,17 +11,12 @@ showStation <- function(station,
                       maptype = "satellite",
                       zoom = 15)
   # create an image around this
-  station.image <- ggmap(image.in)
+  station.image <- ggmap(image.in) %+% station + aes(x = LON, y = LAT)
   station.image <- station.image +
-    geom_point(data = station,
-               aes(x = LON,
-                   y = LAT),         
-               shape = 16,
+    geom_point(shape = 16,
                color = "white",
                fill = "white") + 
-    geom_rect(inherit.aes = FALSE,
-              data = station,
-              aes(xmin = LON - precision,
+    geom_rect(aes(xmin = LON - precision,
                   xmax = LON + precision,
                   ymin = LAT - precision,
                   ymax = LAT + precision,
@@ -28,11 +24,11 @@ showStation <- function(station,
                   group=NULL),
               color = "white",
               fill = NA) +
-    geom_text(data = station,
-              aes(x = LON - 2 * precision,
+    geom_text(aes(x = LON - 2 * precision,
                   y = LAT + 2 * precision,
-                  label = paste(LAT, "°N,\n",
-                                LON, "°W")),
+                  label = paste(LAT, "N,\n",
+                                LON, "W", 
+                                sep = "")),
               color = "white",
               size = 4,
               hjust = 0,
@@ -70,8 +66,9 @@ ImageStations <- function(stations = NULL,
     
     # write this image to file
     filepath <- file.path(data.dir,
-                          "figures","StationImages",
-                          paste(station$USAF, "_",
+                          "maps",
+                          paste("Image",
+                                station$USAF, "_",
                                 gsub("[/]","-",station$NAME),
                                 ".png",
                                 sep = ""))
