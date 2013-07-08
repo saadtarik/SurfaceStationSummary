@@ -28,7 +28,9 @@ RequestStationDataFiles <- function(station.list = NULL,
   NOAA.FTP <- "ftp://ftp3.ncdc.noaa.gov/pub/data/noaa"
   NOAA.con = getCurlHandle(ftp.use.epsv = FALSE,
                            maxconnects=1,
-                           fresh.connect=0)
+                           fresh.connect=0,
+                           timeout = 5,
+                           useragent = "R")
   # work through the years
   for (y in seq(as.numeric(format(min(year.range),"%Y")),
                 as.numeric(format(max(year.range),"%Y")))) {

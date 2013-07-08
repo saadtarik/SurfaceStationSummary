@@ -19,7 +19,7 @@ LoadStationData <- function(station.files = station.files,
     obs.in <- read.csv(file = file.path(data.dir,
                                         "data",
                                         "csv",
-                                        file.id))
+                                        file.id[1]))
     obs.in <- obs.in[order(obs.in$M,
                            obs.in$D,
                            obs.in$HR), ]
@@ -34,12 +34,6 @@ LoadStationData <- function(station.files = station.files,
                         "%Y-%m",
                         tz = "UTC")
     
-    # get the meta data from the files
-    obs.in$ID <- station.files$ID[rowi]
-    obs.in$LAT <- station.files$LAT[rowi]
-    obs.in$LONG <- station.files$LONG[rowi]
-    obs.in$ELEV <- station.files$ELEV[rowi]
-    obs.in$NAME <- station.files$NAME[rowi]
     if (file.count == 0){
       obs.all <- obs.in
     } else {
@@ -49,9 +43,6 @@ LoadStationData <- function(station.files = station.files,
   }
   # now have all of the data in one data frame
   # replace missing values with NA
-  obs.all[(obs.all$LAT >= 99.999),"LAT"] = NA
-  obs.all[(obs.all$LONG >= 999.999),"LONG"] = NA
-  obs.all[(obs.all$ELEV == 9999),"ELEV"] = NA
   obs.all[(obs.all$WIND.DIR >= 999),"WIND.DIR"] = NA
   obs.all[(obs.all$WIND.SPD >= 999),"WIND.SPD"] = NA
   obs.all[(obs.all$TEMP >= 999),"TEMP"] = NA

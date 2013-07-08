@@ -14,25 +14,27 @@ getDailyStatistics <- function(obs.in,
   # returning  a TRUE / FALSE value
   obs.in.ag.check.ToD <- aggregate(cbind(WIND.SPD.CHECK = WIND.SPD,
                                          TEMP.CHECK = TEMP,
-                                         ATM.PRES.CHECK = ATM.PRES) ~ ID + DATE + ToD,
+                                         ATM.PRES.CHECK = ATM.PRES) ~ DATE + ToD,
                                    data = obs.in,            
+                                   na.action = na.pass,
                                    function(x) sum( !is.na(x) ) > 1)
   # now check to see if each date has 4 pieces of data
   obs.in.ag.check.Date <- aggregate(cbind(WIND.SPD.CHECK = WIND.SPD.CHECK,
                                           TEMP.CHECK = TEMP.CHECK,
-                                          ATM.PRES.CHECK = ATM.PRES.CHECK) ~ ID + DATE,
-                                    data = obs.in.ag.check.ToD,            
+                                          ATM.PRES.CHECK = ATM.PRES.CHECK) ~ DATE,
+                                    data = obs.in.ag.check.ToD,  
+                                    na.action = na.pass,          
                                     function(x) sum(x) == 4)  
   # get the statistics associated with that period
   obs.in.ag.stat <- aggregate(cbind(WIND.SPD = WIND.SPD,
                                     TEMP = TEMP,
-                                    ATM.PRES = ATM.PRES) ~ ID + DATE,
-                              data = obs.in,            
+                                    ATM.PRES = ATM.PRES) ~ DATE,
+                              data = obs.in,           
+                              na.action = na.pass, 
                               FUN = stat, na.rm = TRUE)
   # finally apply our TRUE / FALSE to them
   # create the output dataframe
-  obs.out <- data.frame("ID" = obs.in.ag.stat$ID,
-                        "DATE" = obs.in.ag.stat$DATE,
+  obs.out <- data.frame("DATE" = obs.in.ag.stat$DATE,
                         "WIND.SPD" = NA,
                         "TEMP" = NA,
                         "ATM.PRES" = NA)
@@ -68,25 +70,26 @@ getCalendarMonthStatistics <- function(obs.in,
   # each combination of year and month should have at least 15 daily values
   obs.in.ag.check.YM <- aggregate(cbind(WIND.SPD.CHECK = WIND.SPD.CHECK,
                                         TEMP.CHECK = TEMP.CHECK,
-                                        ATM.PRES.CHECK = ATM.PRES.CHECK) ~ ID + B,
+                                        ATM.PRES.CHECK = ATM.PRES.CHECK) ~ B,
                                   data = aggregate(cbind(WIND.SPD.CHECK = WIND.SPD,
                                                          TEMP.CHECK = TEMP,
-                                                         ATM.PRES.CHECK = ATM.PRES) ~ ID + Y + B,
-                                                   data = obs.in,            
+                                                         ATM.PRES.CHECK = ATM.PRES) ~ Y + B,
+                                                   data = obs.in,                                                           
+                                                   na.action = na.pass,
                                                    function(x) sum( !is.na(x) ) > 15),            
                                   function(x) sum( !is.na(x) ) > (year.min.count))
   
   # now get the statistic
   obs.in.ag.stat <- aggregate(cbind(WIND.SPD = WIND.SPD,
                                     TEMP = TEMP,
-                                    ATM.PRES = ATM.PRES) ~ ID + B,
-                              data = obs.in,            
+                                    ATM.PRES = ATM.PRES) ~ B,
+                              data = obs.in,                              
+                              na.action = na.pass,
                               FUN = stat, na.rm = TRUE)
   
   # finally apply our TRUE / FALSE to them
   # create the output dataframe
-  obs.out <- data.frame("ID" = obs.in.ag.stat$ID,
-                        "B" = obs.in.ag.stat$B,
+  obs.out <- data.frame("B" = obs.in.ag.stat$B,
                         "WIND.SPD" = NA,
                         "TEMP" = NA,
                         "ATM.PRES" = NA)
