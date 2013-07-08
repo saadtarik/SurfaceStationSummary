@@ -33,6 +33,11 @@ FindStations <- function(country.code = NULL,
   # define the names that we will need later
   names(st)[c(3, 9, 10)] <- c("NAME", "LONG", "ELEV")
   st <- st[, -5]
+  # create a unique identifier
+  st$ID <- paste(st$USAF,
+                           "-",
+                           st$WBAN,
+                           sep = "") 
   # fix something that means that names get treated as factors
   st$NAME <- as.character(st$NAME)
   # get more metadata
@@ -44,7 +49,7 @@ FindStations <- function(country.code = NULL,
   
   # Filter stations ----
   # check the USAF ID
-  valid.USAF <- !(st$USAF == 999999)
+  valid.USAF <- !((st$USAF == 999999) | (as.numeric(st$USAF) == 0) | is.na(st$USAF))
   
   # check the country code
   if (!is.null(country.code)){
@@ -98,6 +103,7 @@ FindStations <- function(country.code = NULL,
                        start.lteq.year.max & end.gteq.year.min & 
                        gteq.lat.min  & lteq.lat.max & 
                        gteq.long.min & lteq.long.max,]
+  station.list <- station.list[!is.na(station.list$USAF),]
   
   # create the output
   return(station.list)

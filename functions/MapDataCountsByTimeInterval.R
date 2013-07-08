@@ -10,8 +10,8 @@ MapDataCountsByTimeInterval <- function(obs.all,
   counts <- merge(stations.all,
                   GetDataCountsByTimeInterval(obs.all, 
                                               interval = interval),
-                  by.x = "USAF",
-                  by.y = "USAF")
+                  by.x = "ID",
+                  by.y = "ID")
   
   # create the map and add the data to it
   cat("...requesting a base map\n")
@@ -19,7 +19,8 @@ MapDataCountsByTimeInterval <- function(obs.all,
                        long.range = long.range,
                        data.in = counts)
   map <- map +
-    geom_point(aes_string(size = plot.variable)) +
+    geom_point(aes_string(size = plot.variable),
+               alpha = 0.5) +
     scale_size_area(name = "Number of \ndata points") 
   
   # need to add to this plot depending on the time interval we chose

@@ -1,4 +1,5 @@
 WriteStationInformation <- function(stations.all,
+                                    projectID,
                                     data.dir,
                                     country.code){
   ## find the unique station identifiers  
@@ -25,9 +26,9 @@ WriteStationInformation <- function(stations.all,
               digits = c(0,0,0,0,2,2,0,0,0))
   print(tab,
         file=file.path(data.dir,
+                       projectID,
                        "tex",
-                       paste(country.code,
-                             "_Stations.tex",
+                       paste("Stations.tex",
                              sep="")),
         append=F,
         tabular.environment="longtable",

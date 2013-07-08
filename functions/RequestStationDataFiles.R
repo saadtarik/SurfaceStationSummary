@@ -1,19 +1,3 @@
-
-# define a function to tell me more about wget errors
-wget.errors <- function(errorCode) {  
-  ## 'errorCode' is the value returned by wget  
-  desc <- ifelse(errorCode==0, "No problems occurred",
-                 ifelse(errorCode==1, "Generic error code.",
-                        ifelse(errorCode==2, "Parse error",
-                               ifelse(errorCode==3, "File I/O error",
-                                      ifelse(errorCode==4, "Network failure",
-                                             ifelse(errorCode==5, "SSL verification failure",
-                                                    ifelse(errorCode==6, "Username/password authentication failure",
-                                                           ifelse(errorCode==7, "Protocol error",
-                                                                  ifelse(errorCode==8, "Server issued an error response",
-                                                                         NA )))))))))
-}
-
 ## REQUEST STATION DATA ----
 RequestStationDataFiles <- function(station.list = NULL,
                                     year.range = c(NULL,NULL),
@@ -27,6 +11,7 @@ RequestStationDataFiles <- function(station.list = NULL,
   # create a flat data file as output
   file.list <- data.frame("USAF" = NA,
                           "WBAN" = NA,
+                          "ID" = NA,
                           "NAME" = NA,
                           "LAT" = NA,
                           "LONG" = NA,
@@ -34,95 +19,120 @@ RequestStationDataFiles <- function(station.list = NULL,
                           "YR" = NA,
                           "Filename" = NA)
   
+  # directory we will send our files to
+  destination.file.path <- file.path(data.dir,
+                                     "data",
+                                     "raw")
+  
   # download data from each station for each year ----
+  NOAA.FTP <- "ftp://ftp3.ncdc.noaa.gov/pub/data/noaa"
+  NOAA.con = getCurlHandle(ftp.use.epsv = FALSE,
+                           maxconnects=1,
+                           fresh.connect=0)
   # work through the years
-  for (y in as.numeric(format(min(year.range),"%Y")):
-         as.numeric(format(max(year.range),"%Y"))) {
+  for (y in seq(as.numeric(format(min(year.range),"%Y")),
+                as.numeric(format(max(year.range),"%Y")))) {
+    # get some information about the files
+    source.file.path <- paste(NOAA.FTP,"/",y,"/",sep="")
+    cat("\nLooking in directory ", source.file.path, "\n")      
+    
+    # get a file listing
+    source.listing <- unlist(strsplit(getURL(source.file.path,
+                                             curl = NOAA.con,
+                                             verbose=TRUE,
+                                             dirlistonly = TRUE),
+                                      "\n"))
+    cat("...got file listing\n")          
     # work through the stations
     for (s in 1:dim(station.list)[1]) {
-      # get the name of the file we want
-      outputs[s, 1] <- paste(sprintf("%06d", station.list$USAF[s]),
-                             "-",
-                             sprintf("%05d", station.list$WBAN[s]),
-                             "-", 
-                             y,
-                             sep = "")
-      
-      # get some information about the files
-      destination.file.path <- file.path(data.dir,
-                                         "data",
-                                         "raw")
-      destination.file <- outputs[s, 1]
-      destination.file.gz <- paste(destination.file,
-                                   "gz",
-                                   sep=".")
-      
-      # create the command we will will use
-      wget <- paste("wget --directory-prefix ",
-                    destination.file.path,
-                    " ftp://ftp3.ncdc.noaa.gov/pub/data/noaa/",
-                    y, "/", destination.file.gz,
-                    sep = "")
-      
-      # tell the user something
-      cat("\nLooking for file ", destination.file, "\n")      
-      if (debug.level > 0) {
-        cat("wget command: ", wget, "\n")
-      }
-      
-      # use a loop to try a few times
-      # start a counter to see how many times we tried
-      rcount = 0
-      repeat{
+      # get the name of the remote file for this station.
+      cat("\nLooking for station ", as.character(station.list$USAF[s]), "\n")            
+      # This will include .gz in the name
+      source.file.gz <- grep(as.character(paste(station.list$USAF[s],
+                                                "-",
+                                                station.list$WBAN[s],
+                                                sep = "")),
+                             source.listing,
+                             fixed = TRUE,
+                             value = TRUE)
+      destination.file.gz <- source.file.gz      
+      if (length(source.file.gz) != 0){
+        # Remove the .gz so that we can search      
+        source.file <- sub(".gz","",source.file.gz)
+        destination.file <- source.file
+        
+        # tell the user something
+        cat("...downloading file ", source.file.gz, "\n")      
+        
         # check to see if the zipped file exists,
         # or if the unzipped file is there
         destination.file.exist <- any(file.exists(file.path(destination.file.path,
-                                                        destination.file),
+                                                            destination.file),
                                                   file.path(destination.file.path,
-                                                        destination.file.gz)))
+                                                            destination.file.gz)))
         
-        if(!destination.file.exist){
-          cat("... download attempt ", rcount <- rcount+1, "")
+        if(!destination.file.exist){        
           # now try to actually get the file, returning the error
-          outputs[s, 2] <- try(system(wget, 
-                                      intern = FALSE,
-                                      ignore.stderr = TRUE))   
-          cat(wget.errors(outputs[s, 2]))
-          if (any(outputs[s,2],c(2,5,6,7))){          
-            break
-          } else {
-            # and append the data to the output
-            file.list <- rbind(file.list,
-                               cbind("USAF" = station.list$USAF[s],
-                                     "WBAN" = station.list$WBAN[s],
-                                     "NAME" = station.list$NAME[s],
-                                     "LAT" = station.list$LAT[s],
-                                     "LONG" = station.list$LONG[s],
-                                     "ELEV" = station.list$ELEV[s],
-                                     "YR" = y,
-                                     "Filename" = destination.file))
+          # http://stackoverflow.com/questions/14426359/downloading-large-files-with-r-rcurl-efficiently
+          try(download.file(url = paste(source.file.path,
+                                        source.file.gz,
+                                        sep = ""),
+                            destfile = file.path(destination.file.path,
+                                                 destination.file.gz)))
+          # check and see how well that worked
+          download.failed <- TRUE
+          if (file.exists(file.path(destination.file.path,
+                             destination.file.gz))){
+            if (file.info(file.path(destination.file.path,
+                                     destination.file.gz))$size > 0){
+              download.failed <- FALSE
+            }
           }
-        } else {
-          cat("file already available locally :)")
-          # and append the data to the output
+          if (file.exists(file.path(destination.file.path,
+                                   destination.file))){
+            if (file.info(file.path(destination.file.path,
+                                    destination.file))$size > 0){
+              download.failed <- FALSE
+            }
+          }
+                    
+          if(download.failed){
+            try(file.remove(file.path(destination.file.path,
+                                  destination.file.gz)))
+            try(file.remove(file.path(destination.file.path,
+                                  destination.file)))
+            cat("...download failed, partial files removed.")
+            destination.file.exist <- FALSE
+          } else{
+            cat("...download succesful.")
+            destination.file.exist <- TRUE
+          }
+        }
+        
+        # check again
+        if(destination.file.exist){        
+          # append the data to the output
           file.list <- rbind(file.list,
                              cbind("USAF" = station.list$USAF[s],
-                             "WBAN" = station.list$WBAN[s],
-                             "NAME" = station.list$NAME[s],
-                             "LAT" = station.list$LAT[s],
-                             "LONG" = station.list$LONG[s],
-                             "ELEV" = station.list$ELEV[s],
-                             "YR" = y,
-                             "Filename" = destination.file))
-          break          
+                                   "WBAN" = station.list$WBAN[s],
+                                   "ID" = station.list$ID[s],
+                                   "NAME" = station.list$NAME[s],
+                                   "LAT" = station.list$LAT[s],
+                                   "LONG" = station.list$LONG[s],
+                                   "ELEV" = station.list$ELEV[s],
+                                   "YR" = y,
+                                   "Filename" = destination.file))  
         }      
-        if (rcount >5){
-          break
-        }
+      } else{
+        # tell the user something
+        cat("...didn't find a file for station ", station.list$ID[s], "\n")
       }
     }
   }
-  return(file.list[-1,])
+  cat("Finished fetching files\n")
+  # generate a file list
+  file.list <- file.list[-1,]
+  return(file.list)
 }
 
 

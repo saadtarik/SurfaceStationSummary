@@ -13,8 +13,8 @@ CreateBaseMap <- function(lat.range = c(NA,NA),
   if (is.null(data.in)){
     base.map <- ggmap(base.map.in)
   } else {    
-    base.map <- ggmap(base.map.in ) %+% data.in + aes(x = LONG,
-                                                      y = LAT)
+    base.map <- ggmap(base.map.in) %+% data.in + aes(x = LONG,
+                                                     y = LAT)
   }
   base.map <- base.map +
     labs(x = "Longitude",

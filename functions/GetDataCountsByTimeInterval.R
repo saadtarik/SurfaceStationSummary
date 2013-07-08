@@ -14,7 +14,7 @@ GetDataCountsOverall <- function(obs.all){
   data.counts <- aggregate(cbind(WIND.DIR.COUNT = WIND.DIR,
                                     WIND.SPD.COUNT = WIND.SPD,
                                     TEMP.COUNT = TEMP,
-                                    ATM.PRES.COUNT = ATM.PRES) ~ USAF,
+                                    ATM.PRES.COUNT = ATM.PRES) ~ ID,
                               data=obs.all,
                               function(x) sum( !is.na(x) ))
   return(data.counts)}
@@ -24,7 +24,7 @@ GetDataCountsByYear <- function(obs.all){
   data.counts <- aggregate(cbind(WIND.DIR.COUNT = WIND.DIR,
                                    WIND.SPD.COUNT = WIND.SPD,
                                    TEMP.COUNT = TEMP,
-                                   ATM.PRES.COUNT = ATM.PRES) ~ USAF + YR,
+                                   ATM.PRES.COUNT = ATM.PRES) ~ ID + YR,
                              data=obs.all,
                              function(x) sum( !is.na(x) ))
   return(data.counts)}
@@ -34,7 +34,7 @@ GetDataCountsByMonth <- function(obs.all){
   data.counts <- aggregate(cbind(WIND.DIR.COUNT = WIND.DIR,
                                     WIND.SPD.COUNT = WIND.SPD,
                                     TEMP.COUNT = TEMP,
-                                    ATM.PRES.COUNT = ATM.PRES) ~ USAF + M,
+                                    ATM.PRES.COUNT = ATM.PRES) ~ ID + M,
                               data=obs.all,
                               function(x) sum( !is.na(x) ))
   return(data.counts)}
@@ -44,7 +44,7 @@ GetDataCountsByYearMonth <- function(obs.all){
   data.counts <- aggregate(cbind(WIND.DIR.COUNT = WIND.DIR,
                                   WIND.SPD.COUNT = WIND.SPD,
                                   TEMP.COUNT = TEMP,
-                                  ATM.PRES.COUNT = ATM.PRES) ~ USAF + YR + M,
+                                  ATM.PRES.COUNT = ATM.PRES) ~ ID + YR + M,
                             data=obs.all,
                             function(x) sum( !is.na(x) ))
   return(data.counts)}
@@ -54,7 +54,7 @@ GetDataCountsByHour <- function(obs.all){
   data.counts <- aggregate(cbind(WIND.DIR.COUNT = WIND.DIR,
                                        WIND.SPD.COUNT = WIND.SPD,
                                        TEMP.COUNT = TEMP,
-                                       ATM.PRES.COUNT = ATM.PRES) ~ USAF + HR,
+                                       ATM.PRES.COUNT = ATM.PRES) ~ ID + HR,
                                  data=obs.all,
                                  function(x) sum( !is.na(x) ))
   return(data.counts)}

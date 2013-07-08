@@ -1,6 +1,6 @@
 showStation <- function(station,
                         precision = 0.0005,
-                        image.half.width){
+                        image.half.width = 5* precision){
   print(station)
   station$LON <- station$LONG
   station$precision <- precision
@@ -39,45 +39,7 @@ showStation <- function(station,
     scale_y_continuous(limits=c(station$LAT - image.half.width,
                                 station$LAT + image.half.width)) +                      
     labs(x = "Longitude",
-         y = "Latitude",
-         title = paste("Region around station ",
-                       station$NAME, 
-                       " (USAF ",
-                       station$USAF,
-                       ")",
-                       sep = ""))
+         y = "Latitude")
   print(station.image)
   return(station.image)
-}
-
-ImageStations <- function(stations = NULL,
-                          precision = 0.0005,
-                          image.half.width = 5*precision,
-                          data.dir = NULL){  
-  # work through, row by row
-  for (rowi in 1:dim(stations)[1]){    
-    
-    station <- stations[rowi,]
-    station.image <- showStation(station,
-                                 precision = precision,
-                                 image.half.width = image.half.width)
-    # display to screen
-    station.image
-    
-    # write this image to file
-    filepath <- file.path(data.dir,
-                          "maps",
-                          paste("Image",
-                                station$USAF, "_",
-                                gsub("[/]","-",station$NAME),
-                                ".png",
-                                sep = ""))
-    cat("Saving image to",filepath,"\n")
-    ggsave(filepath,
-           plot = station.image,
-           scale = 1, 
-           width = 9,
-           height = 6, units = c("in"),
-           dpi = 300, limitsize = TRUE) 
-  }
 }

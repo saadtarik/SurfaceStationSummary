@@ -2,21 +2,25 @@
 require(ggplot2)
 require(RColorBrewer)
 
-plot.windrose <- function(spd,
-                          dir,
-                          spdres = 2,
-                          dirres = 30,
-                          spdmin = 2,
-                          spdmax = 20,
-                          palette = "YlGnBu",
-                          countmax = NA,
-                          debug = 0){
+plotWindrose <- function(data,
+                         spd = "speed",
+                         dir = "direction",
+                         spdres = 2,
+                         dirres = 30,
+                         spdmin = 2,
+                         spdmax = 20,
+                         palette = "YlGnBu",
+                         countmax = NA,
+                         opts = NA,
+                         debug = 0){
+  # check inputs ----
+  if (debug>0){
+    cat("Speed = ", spd, "\n")
+    cat("Direction = ", dir, "\n")
+  }
   # Tidy up input data ----
-  n.in <- length(spd)
-  dnu <- (is.na(spd) | is.na(dir))
-  spd <- spd[!dnu]
-  dir <- dir[!dnu]
-  n.valid <- length(spd)
+  dnu <- (is.na(data[,spd]) | is.na(data[,dir]))
+  data<- data[!dnu,]
   
   # figure out the wind speed bins ----
   n.colors.in.range <- length(seq(spdmin,spdmax,spdres))-1
@@ -25,17 +29,17 @@ plot.windrose <- function(spd,
                                                      min(9,
                                                          n.colors.in.range)),                                               
                                                  palette))(n.colors.in.range)
-  if (max(spd,na.rm = TRUE) > spdmax){    
+  if (max(data[,spd],na.rm = TRUE) > spdmax){    
     speedcuts.breaks <- c(seq(spdmin,spdmax,by = spdres),
-                          max(spd,na.rm = TRUE))
+                          max(data[,spd],na.rm = TRUE))
     speedcuts.labels <- c(paste(c(seq(spdmin,spdmax-spdres,by = spdres)),
                                 '-',
                                 c(seq(spdmin+spdres,spdmax,by = spdres))),
                           paste(spdmax,
                                 "-",
-                                max(spd,na.rm = TRUE)))
+                                max(data[,spd],na.rm = TRUE)))
     speedcuts.colors <- c(speedcuts.colors,
-                              "grey50")
+                          "grey50")
   } else{
     speedcuts.breaks <- c(seq(spdmin,spdmax,by = spdres))
     speedcuts.labels <- paste(c(seq(spdmin,spdmax-spdres,by = spdres)),
@@ -43,13 +47,14 @@ plot.windrose <- function(spd,
                               c(seq(spdmin+spdres,spdmax,by = spdres)))
     
   }
-  
+  if (debug > 0){
+    cat(speedcuts.colors, "\n")
+  }
   # Bin wind speed data ----
-  spd.binned <- cut(spd,
-                    breaks = speedcuts.breaks,
-                    labels = speedcuts.labels,
-                    ordered_result = TRUE)
-  
+  data$spd.binned <- cut(data[,spd],
+                         breaks = speedcuts.breaks,
+                         labels = speedcuts.labels,
+                         ordered_result = TRUE)  
   
   # figure out the wind direction bins
   dir.breaks <- c(-dirres/2,
@@ -61,21 +66,19 @@ plot.windrose <- function(spd,
                         seq(3*dirres/2, 360-dirres/2, by = dirres)),
                   paste(360-dirres/2,"-",dirres/2))
   # assign each wind direction to a bin
-  dir.binned <- cut(dir,
-                    breaks = dir.breaks,
-                    ordered_result = TRUE)
-  levels(dir.binned) <- dir.labels
-  
-  # create a data frame with the data in it ----
-  windrose.data <- data.frame(spd.binned,
-                              dir.binned)
-  
-  # Run debug if required ----
   if (debug>0){    
     cat(dir.breaks,"\n")
     cat(dir.labels,"\n")
-    cat(levels(dir.binned),"\n")
-    cat(speedcuts.colors, "\n")
+  }
+  data$dir.binned <- cut(data[,dir],
+                         breaks = dir.breaks,
+                         ordered_result = TRUE)
+  levels(data$dir.binned) <- dir.labels
+  
+  # Run debug if required ----
+  if (debug>0){    
+    cat("levels(dir.binned) = ",levels(data$dir.binned),"\n")   
+    cat("names(data) = ", names(data), "\n")   
     if (debug >1){
       cat(spd.binned,"\n")  
       cat(dir.binned,"\n")    
@@ -83,10 +86,14 @@ plot.windrose <- function(spd,
   }  
   
   # create the plot ----
-  plot.windrose <- ggplot(data = windrose.data,
+  plot.windrose <- ggplot(data = data,
                           aes(x = dir.binned,
                               fill = spd.binned)) +
-    geom_bar() + 
+    geom_bar()
+  if (!is.na(opts)){
+    plot.windrose <- eval(parse(text = paste("plot.windrose +", opts)))
+  }
+  plot.windrose <- plot.windrose +
     scale_x_discrete(drop = FALSE,
                      labels = waiver()) +
     coord_polar(start = -((dirres/2)/360) * 2*pi) +
@@ -102,9 +109,8 @@ plot.windrose <- function(spd,
   }
   
   # print the plot
-  print(plot.windrose)
+  print(plot.windrose)  
   
-   
   # return the handle to the wind rose
   return(plot.windrose)
 }

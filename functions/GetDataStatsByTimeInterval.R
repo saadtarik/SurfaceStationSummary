@@ -12,29 +12,26 @@ getDailyStatistics <- function(obs.in,
   )
   # first check to see if we have enough data throughout the day
   # returning  a TRUE / FALSE value
-  obs.in.ag.check.ToD <- aggregate(cbind(WIND.DIR.CHECK = WIND.DIR,
-                                         WIND.SPD.CHECK = WIND.SPD,
+  obs.in.ag.check.ToD <- aggregate(cbind(WIND.SPD.CHECK = WIND.SPD,
                                          TEMP.CHECK = TEMP,
-                                         ATM.PRES.CHECK = ATM.PRES) ~ USAF + DATE + ToD,
+                                         ATM.PRES.CHECK = ATM.PRES) ~ ID + DATE + ToD,
                                    data = obs.in,            
                                    function(x) sum( !is.na(x) ) > 1)
   # now check to see if each date has 4 pieces of data
-  obs.in.ag.check.Date <- aggregate(cbind(WIND.DIR.CHECK = WIND.DIR.CHECK,
-                                          WIND.SPD.CHECK = WIND.SPD.CHECK,
+  obs.in.ag.check.Date <- aggregate(cbind(WIND.SPD.CHECK = WIND.SPD.CHECK,
                                           TEMP.CHECK = TEMP.CHECK,
-                                          ATM.PRES.CHECK = ATM.PRES.CHECK) ~ USAF + DATE,
+                                          ATM.PRES.CHECK = ATM.PRES.CHECK) ~ ID + DATE,
                                     data = obs.in.ag.check.ToD,            
                                     function(x) sum(x) == 4)  
   # get the statistics associated with that period
-  obs.in.ag.stat <- aggregate(cbind(WIND.DIR = WIND.DIR,
-                                    WIND.SPD = WIND.SPD,
+  obs.in.ag.stat <- aggregate(cbind(WIND.SPD = WIND.SPD,
                                     TEMP = TEMP,
-                                    ATM.PRES = ATM.PRES) ~ USAF + DATE,
+                                    ATM.PRES = ATM.PRES) ~ ID + DATE,
                               data = obs.in,            
                               FUN = stat, na.rm = TRUE)
   # finally apply our TRUE / FALSE to them
   # create the output dataframe
-  obs.out <- data.frame("USAF" = obs.in.ag.stat$USAF,
+  obs.out <- data.frame("ID" = obs.in.ag.stat$ID,
                         "DATE" = obs.in.ag.stat$DATE,
                         "WIND.SPD" = NA,
                         "TEMP" = NA,
@@ -48,7 +45,7 @@ getDailyStatistics <- function(obs.in,
 
 getCalendarMonthStatistics <- function(obs.in,
                                        stat = "mean",
-                                       threshold = 0.66){
+                                       year.min.count = 1){
   # get statistics for each January, February, etc.
   # work on whatever data are passed in; these could be daily means, daily mins, whatever.
   
@@ -71,24 +68,24 @@ getCalendarMonthStatistics <- function(obs.in,
   # each combination of year and month should have at least 15 daily values
   obs.in.ag.check.YM <- aggregate(cbind(WIND.SPD.CHECK = WIND.SPD.CHECK,
                                         TEMP.CHECK = TEMP.CHECK,
-                                        ATM.PRES.CHECK = ATM.PRES.CHECK) ~ USAF + B,
+                                        ATM.PRES.CHECK = ATM.PRES.CHECK) ~ ID + B,
                                   data = aggregate(cbind(WIND.SPD.CHECK = WIND.SPD,
                                                          TEMP.CHECK = TEMP,
-                                                         ATM.PRES.CHECK = ATM.PRES) ~ USAF + Y + B,
+                                                         ATM.PRES.CHECK = ATM.PRES) ~ ID + Y + B,
                                                    data = obs.in,            
                                                    function(x) sum( !is.na(x) ) > 15),            
-                                  function(x) sum( !is.na(x) ) > (threshold*n.years))
+                                  function(x) sum( !is.na(x) ) > (year.min.count))
   
   # now get the statistic
   obs.in.ag.stat <- aggregate(cbind(WIND.SPD = WIND.SPD,
                                     TEMP = TEMP,
-                                    ATM.PRES = ATM.PRES) ~ USAF + B,
+                                    ATM.PRES = ATM.PRES) ~ ID + B,
                               data = obs.in,            
                               FUN = stat, na.rm = TRUE)
   
   # finally apply our TRUE / FALSE to them
   # create the output dataframe
-  obs.out <- data.frame("USAF" = obs.in.ag.stat$USAF,
+  obs.out <- data.frame("ID" = obs.in.ag.stat$ID,
                         "B" = obs.in.ag.stat$B,
                         "WIND.SPD" = NA,
                         "TEMP" = NA,
