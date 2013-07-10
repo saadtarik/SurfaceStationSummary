@@ -29,7 +29,7 @@ RequestStationDataFiles <- function(station.list = NULL,
   NOAA.con = getCurlHandle(ftp.use.epsv = FALSE,
                            maxconnects=1,
                            fresh.connect=0,
-                           timeout = 5,
+                           timeout = 60,
                            useragent = "R")
   # work through the years
   for (y in seq(as.numeric(format(min(year.range),"%Y")),
@@ -87,6 +87,9 @@ RequestStationDataFiles <- function(station.list = NULL,
                              destination.file.gz))){
             if (file.info(file.path(destination.file.path,
                                      destination.file.gz))$size > 0){
+              # expand the zip
+              gunzip(filename = (file.path(destination.file.path,
+                                           destination.file.gz)))
               download.failed <- FALSE
             }
           }

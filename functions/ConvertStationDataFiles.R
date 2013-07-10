@@ -2,16 +2,13 @@
 ConvertStationDataFiles <- function(station.files = NULL,                                    
                                     data.dir = getwd,
                                     debug.level = 0){
+  cat("Converting raw data into .csv files \n")
+  
   ## IMPORT NOAA DATA FILES ----
   # data directory
   source.file.directory <- file.path(data.dir,"data","raw")
   destination.file.directory <- file.path(data.dir,"data","csv")
-  
-  # unzip all of the files
-  system(paste("gunzip -r",source.file.directory),
-         intern = FALSE,
-         ignore.stderr = TRUE)
-  
+    
   # define a data frame to put information in
   column.widths <- c(4, 6, 5, 4, 2, 2, 2, 2, 1, 6,
                      7,5,5,5,4,3,1,1,4, 1,5,1,1,1,6,
@@ -19,6 +16,7 @@ ConvertStationDataFiles <- function(station.files = NULL,
   
   # read the files in
   for (fi in 1:length(station.files$Filename)) {
+    cat("... converting file ",station.files$Filename[fi],"\n")
     # read the original data file
     data <- read.fwf(file.path(source.file.directory,
                                station.files$Filename[fi]),

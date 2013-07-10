@@ -40,7 +40,7 @@ PlotDataCountsByYear <- function(counts){
                                  "Temperature",
                                  "Barometric\n pressure")) + 
     labs(x = "Year",
-         y = "Number of valid data") +
+         y = "Number of valid data") +     
     theme(legend.position="top")
   print(plot.data.counts)  
   return(plot.data.counts)

@@ -1,0 +1,40 @@
+\section{#NAME (USAF #USAF, WBAN #WBAN)}
+
+The #NAME station is at #LONG$^\circ$ W, #LAT$^\circ$ N, elevation #ELEV m. The station is recorded as being operational from #BEGIN to #END.
+
+\begin{figure}[!ht]
+        \centering
+	\subfloat[Location]{\includegraphics[width = 3in]{StationLocation.png}}
+	\hfill
+        \subfloat[Satellite image.]{\includegraphics[width = 3in]{StationImage.png}}
+        \caption{#NAME station location. The white box in the satellite image shows the approximate area taking into account the precision of the supplied latitude and longitude.}
+\end{figure} 
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width = 5in]{WindRose}
+\caption{#NAME wind rose using all observations}
+\end{figure}
+
+\clearpage
+\begin{figure}[!ht]
+\centering
+\includegraphics[width = 6in]{WindRoseByMonth.png}
+\caption{Monthly wind roses at #NAME using all observations.}
+\end{figure}
+
+\begin{figure}[!ht]
+        \centering
+        \subfloat[Wind Speed]{\includegraphics[width = 3in]{WindSpdClimatology.png}}
+	\hfill
+	\subfloat[Temperature]{\includegraphics[width = 3in]{TemperatureClimatology.png}}
+        \caption[#NAME temperature and wind speed climatologies]{#NAME climatologies. Plots show the monthly maximum, mean daily maximum, mean daily means, mean daily minimum and minimum observations for months with at least 15 days of observations over #NYEARS years.}
+\end{figure} 
+
+\clearpage
+\begin{figure}[!h]
+\centering
+\includegraphics[width = 6in]{AllDataTimeSeries.png}
+\caption{Time series of observations at #NAME.}
+\end{figure}
+\clearpage
